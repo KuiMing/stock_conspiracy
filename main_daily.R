@@ -46,8 +46,10 @@ main_everyday <- function(recent,date){
     paste0('_daily_',date[1])
   
   newsheet <- gs_new(titlename,ws_title = mark$券商名稱[1])
-  for (i in 2:dim(mark)[1]){
-    newsheet <- gs_ws_new(newsheet,ws_title = mark$券商名稱[i])
+  if (dim(mark)[1]>1){
+    for (i in 2:dim(mark)[1]){
+      newsheet <- gs_ws_new(newsheet,ws_title = mark$券商名稱[i])
+    }
   }
   
   url='https://docs.google.com/spreadsheets/d/1z_2E7G5aVgzoFmgK9tPWM2PN8fppLgd-lkpQU08VLKM/edit#gid=0'
@@ -81,7 +83,7 @@ main_everyday <- function(recent,date){
     output[ind,]=x
     newsheet <- gs_edit_cells(newsheet,ws = i,input = output)
   }
-  Sys.sleep(sample(120:180,1))
+  Sys.sleep(sample(90:120,1))
 }
 
 get_date <- function(){
@@ -142,13 +144,14 @@ List=gs_url(url, lookup = NULL, visibility = NULL, verbose = TRUE)
 daily <- gs_read(List,ws=3)
 date <- get_date()
 daily=daily[is.na(daily$close), ]
-for (i in 1:dim(daily)[1]){
-  main_daily(daily[i,],date)
-  if (i%%5==0){
-    Sys.sleep(sample(120:180,1))
+if (!is.na(daily$code) & !is.null(date)){
+  for (i in 1:dim(daily)[1]){
+    main_daily(daily[i,],date)
+    if (i%%5==0){
+      Sys.sleep(sample(120:180,1))
+    }
   }
 }
-
 stock=gs_read(List,ws=1)
 newstock <- setdiff(stock$code, daily$code)
 recent <- gs_read(List, ws = 2)
