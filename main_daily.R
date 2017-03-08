@@ -105,7 +105,17 @@ get_date <- function(){
 main_daily <- function(daily,date){
   stock <- daily$code
   newurl <- daily$url
-
+  sheet <- gs_url(newurl)
+  ws <- gs_ws_ls(sheet)
+  for (i in 1:length(ws)){
+    oldsheet = gs_read(sheet, ws=i)
+    if (tail(oldsheet$date,1)==date){
+      if (i==length(ws)){
+        return()
+      }
+      next
+    }
+  }
   coln <- c("券商名稱", "均價", "買價",
             "買量", "賣價", "賣量",
             "買賣超", "date","comment")
@@ -127,10 +137,7 @@ main_daily <- function(daily,date){
       output[1,2:7]=0
       output[1,9]=""
     }
-    oldsheet = gs_read(sheet, ws=i)
-    if (tail(oldsheet$date,1)==output$date){
-      return()
-    }
+    
     sheet <- gs_add_row(sheet,ws = i,input = output)
   }
   
@@ -144,7 +151,7 @@ List=gs_url(url, lookup = NULL, visibility = NULL, verbose = TRUE)
 daily <- gs_read(List,ws=3)
 date <- get_date()
 daily=daily[is.na(daily$close), ]
-if (!is.na(daily$code) & !is.null(date)){
+if (!is.na(daily$code) && !is.null(date)){
   for (i in 1:dim(daily)[1]){
     main_daily(daily[i,],date)
     if (i%%5==0){
