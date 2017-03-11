@@ -10,9 +10,13 @@ som <- function(x) {
 
 url='https://docs.google.com/spreadsheets/d/1z_2E7G5aVgzoFmgK9tPWM2PN8fppLgd-lkpQU08VLKM/edit#gid=0'
 List=gs_url(url, lookup = NULL, visibility = NULL, verbose = TRUE)
-stock=gs_read(List,ws=1)
 old <- gs_read(List,ws=2)
+stock=gs_read(List,ws=1)
+stock$close[!is.na(old$close)]='done'
+List <- gs_edit_cells(List,ws = 1,input = stock)
 
+old <- filter(old,is.na(close))
+stock <- filter(stock,is.na(stock))
 newstock <- setdiff(stock$code,old$code)
 
 new_stock <- function(stock){
