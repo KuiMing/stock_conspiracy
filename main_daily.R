@@ -147,8 +147,25 @@ gs_auth()
 url='https://docs.google.com/spreadsheets/d/1z_2E7G5aVgzoFmgK9tPWM2PN8fppLgd-lkpQU08VLKM/edit#gid=0'
 List=gs_url(url, lookup = NULL, visibility = NULL, verbose = TRUE)
 
-
 daily <- gs_read(List,ws=3)
+
+close_stock <- filter(daily, !is.na(close)) %>% 
+  filter(is.na(done))
+if (dim(close_stock)[1]>0){
+  for (i in 1:dim(close_stock)[1]){
+    renames <- gs_url(close_stock$url[i])
+    titles <- gsub("-","",close_stock$close[i]) %>% 
+      paste(renames$sheet_title,.,sep = "_")
+    gs_rename(renames,titles)
+    close_stock$title[i] <- titles
+  }
+  close_stock$done <- 'done'
+  daily[!is.na(daily$close),] <- close_stock
+  
+  List <- gs_edit_cells(List,ws = 3, input = daily)
+  
+}
+
 date <- get_date()
 daily=daily[is.na(daily$close), ]
 if (!is.na(daily$code) && !is.null(date)){
