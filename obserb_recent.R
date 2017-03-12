@@ -16,7 +16,7 @@ stock$close[!is.na(old$close)]='done'
 List <- gs_edit_cells(List,ws = 1,input = stock)
 
 old <- filter(old,is.na(close))
-stock <- filter(stock,is.na(stock))
+stock <- filter(stock,is.na(close))
 newstock <- setdiff(stock$code,old$code)
 
 new_stock <- function(stock){
