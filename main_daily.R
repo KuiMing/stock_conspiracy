@@ -27,9 +27,12 @@ long_date <- function(){
 main_everyday <- function(recent,date){
   stock <- recent$code
   newurl <- recent$url
-  
-
-
+  mark <- gs_url(newurl) %>% 
+    gs_read(ws=2) %>% 
+    filter(!is.na(marked))
+  if (dim(mark)[1]>0){
+    return()
+  } 
   mark <- gs_url(newurl) %>% 
     gs_read(ws=1) %>% 
     filter(!is.na(marked))
@@ -126,8 +129,6 @@ main_daily <- function(daily,date){
   buyer=buyer[!is.na(buyer[,1]),]
   colnames(buyer)=coln
 
-  sheet <- gs_url(newurl)
-  ws <- gs_ws_ls(sheet)
   for (i in 1:length(ws)){
     output <- buyer[buyer[,1]==ws[i],]
     if (length(output$date)==0){
@@ -161,12 +162,7 @@ if (dim(close_stock)[1]>0){
   }
   close_stock$done <- 'done'
   daily[!is.na(daily$close),] <- close_stock
-  wanted <- gs_read(List,ws = 1)
-  wanted$close[wanted$code %in% close_stock$code] <- "done"
-  recent <- gs_read(List,ws = 2)
-  recent$close[recent$code %in% close_stock$code] <- "done"
-  List <- gs_edit_cells(List,ws = 1, input = wanted)
-  List <- gs_edit_cells(List,ws = 2, input = recent)
+
   List <- gs_edit_cells(List,ws = 3, input = daily)
 
 }
@@ -182,10 +178,8 @@ if (!is.na(daily$code) && !is.null(date)){
   }
 }
 stock=gs_read(List,ws=2)
-stock <- filter(stock,is.na(close))
-newstock <- setdiff(stock$code, daily$code)
-recent <- gs_read(List, ws = 2)
-recent <- filter(recent, code %in% newstock)
+recent <- filter(stock,is.na(close))
+
 date=long_date()
 if (dim(recent)[1]>0){
   for (i in 1:dim(recent)[1]){
@@ -193,14 +187,17 @@ if (dim(recent)[1]>0){
     
   }
   old <- gs_read(List,ws=3)
-  ind <- which(old$code %in% recent$code)
+  ind <- which(old$code %in% recent$code & is.na(old$done))
   write.csv(old[ind,],file = 'newstock.csv',fileEncoding = 'utf8',row.names = F)
   system('python /Users/Zac/stock_conspiracy/move_files.py daily')
   
   new_url <- read.csv('newstock.csv',stringsAsFactors = F,fileEncoding = 'utf8')
-  ind <- which(old$code %in% new_url$code)
+  ind <- which(old$code %in% new_url$code & is.na(old$done))
   old$url[ind] <- new_url$url
   List <- gs_edit_cells(List,ws = 3, input = old)
+  recent <- gs_read(List, ws = 2)
+  recent$close <- "done"
+  List <- gs_edit_cells(List,ws = 2, input = recent)
 }
 
 
