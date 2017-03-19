@@ -1,3 +1,13 @@
-## Example
+## Procedure
 
-`sh wangoo_agentstat.sh 2330 20170116 20170213`
+1. Renew recent and daily: 
+
+```
+Rscript <PWD>/obserb_recent.R
+```
+
+2. Only renew daily: 
+
+```
+Rscript <PWD>/main_daily.R
+```
