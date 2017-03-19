@@ -103,4 +103,4 @@ ob_recent <- function(){
 }
 
 ob_recent()
-source('/Users/benjamin/Github/stock_conspiracy/main_daily.R')
+source('/Users/Zac/stock_conspiracy/main_daily.R')
